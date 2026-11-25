@@ -1,0 +1,17 @@
+{
+  "name": "bibikitchen",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "npm@10.9.8",
+  "workspaces": [
+    "web"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check": "turbo check"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.13"
+  }
+}
