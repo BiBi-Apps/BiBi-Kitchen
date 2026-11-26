@@ -5,20 +5,40 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "deploy": "wrangler deploy --config ../webpage/dist/bibikitchen_web/wrangler.json",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate": "wrangler d1 migrations apply DB --remote",
     "build": "vite build",
-    "check": "npm run cf-typegen && tsc --noEmit",
-    "preview": "$npm_execpath run build && vite preview",
-    "deploy": "$npm_execpath run build && wrangler deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "lint": "concurrently -m 1 --timings npm:lint:*",
+    "lint:type-check": "npm run cf-typegen && tsc --noEmit",
+    "lint:formatter": "oxfmt --check",
+    "lint:oxlint": "oxlint",
+    "fix": "concurrently -m 1 --timings npm:fix:*",
+    "fix:formatter": "oxfmt",
+    "fix:oxlint": "oxlint --fix"
   },
   "dependencies": {
-    "hono": "^4.13.16"
+    "@bibikitchen/web-constant": "*",
+    "@bibikitchen/web-service": "*",
+    "@bibikitchen/webpage": "*",
+    "hono": "^4.13.16",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.44.0",
-    "typescript": "^7.0.2",
-    "vite": "^8.1.4",
-    "vite-ssr-components": "^0.8.0",
+    "@cloudflare/vite-plugin": "^1.70.2",
+    "@cloudflare/vitest-plugin": "^1.9.2",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/react": "^19.3.3",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8",
+    "vite-ssr-components": "^0.9.0",
+    "vitest": "^4.1.12",
     "wrangler": "^4.110.0"
   }
 }

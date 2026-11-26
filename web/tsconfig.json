@@ -5,11 +5,12 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
-    "lib": [
-      "ESNext"
-    ],
-    "types": ["vite/client"],
+    "lib": ["ESNext", "DOM"],
+    "types": ["vite/client", "@cloudflare/vitest-plugin/types"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "react",
+    "paths": {
+      "@/*": ["../webpage/src/*"]
+    }
   }
 }
