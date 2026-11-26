@@ -6,9 +6,44 @@
       "persistent": true
     },
     "build": {
-      "outputs": ["dist/**"]
+      "cache": true,
+      "outputs": ["$TURBO_ROOT$/webpage/dist/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/web-constant/src/**",
+        "$TURBO_ROOT$/web-service/src/**",
+        "$TURBO_ROOT$/web-service/drizzle/**",
+        "$TURBO_ROOT$/webpage/src/**"
+      ]
     },
-    "check": {
+    "test": {
+      "cache": true,
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/web-constant/src/**",
+        "$TURBO_ROOT$/web-service/**",
+        "$TURBO_ROOT$/webpage/src/**"
+      ]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/web-constant/src/**",
+        "$TURBO_ROOT$/web-service/src/**",
+        "$TURBO_ROOT$/webpage/src/**"
+      ]
+    },
+    "fix": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate:local": {
+      "cache": false
+    },
+    "db:migrate": {
       "cache": false
     }
   }

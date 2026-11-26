@@ -1,0 +1,29 @@
+{
+  "name": "@bibikitchen/web-service",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "concurrently -m 1 --timings npm:lint:*",
+    "lint:type-check": "tsc --noEmit",
+    "lint:formatter": "oxfmt --check",
+    "lint:oxlint": "oxlint",
+    "fix": "concurrently -m 1 --timings npm:fix:*",
+    "fix:formatter": "oxfmt",
+    "fix:oxlint": "oxlint --fix",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@bibikitchen/web-constant": "*",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.16",
+    "ulidx": "^2.4.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "4.20260702.1",
+    "drizzle-kit": "^0.31.11"
+  }
+}
