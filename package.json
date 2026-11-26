@@ -2,16 +2,29 @@
   "name": "bibikitchen",
   "version": "0.0.1",
   "private": true,
-  "packageManager": "npm@10.9.8",
   "workspaces": [
-    "web"
+    "web",
+    "webpage",
+    "web-service",
+    "web-constant"
   ],
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "check": "turbo check"
+    "deploy": "npm run build && npm run deploy --workspace @bibikitchen/web",
+    "lint": "turbo lint",
+    "fix": "turbo fix",
+    "test": "turbo test",
+    "db:generate": "turbo db:generate",
+    "db:migrate:local": "turbo db:migrate:local",
+    "db:migrate": "turbo db:migrate"
   },
   "devDependencies": {
-    "turbo": "^2.11.13"
-  }
+    "concurrently": "^10.0.7",
+    "oxfmt": "^0.80.0",
+    "oxlint": "^1.95.0",
+    "turbo": "^2.11.13",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "npm@10.9.8"
 }
