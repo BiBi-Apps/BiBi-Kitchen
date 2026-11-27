@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
-  "name": "bibikitchen-web",
+  "name": "bibi-kitchen",
   "compatibility_date": "2025-08-03",
   "main": "./src/index.ts",
   "vars": {
@@ -16,12 +16,8 @@
   ],
   "kv_namespaces": [
     {
-      "binding": "ADMIN_PHONES",
+      "binding": "KV",
       "id": "00000000000000000000000000000001",
-    },
-    {
-      "binding": "CHEF_PHONES",
-      "id": "00000000000000000000000000000002",
     },
   ],
 }

@@ -1,4 +1,4 @@
-import { PHONE, USER_ROLES } from '@bibikitchen/web-constant'
+import { KV_KEYS, PHONE, USER_ROLES } from '@bibikitchen/web-constant'
 import { eq } from 'drizzle-orm'
 import { ulid } from 'ulidx'
 import { getDb } from './db/client'
@@ -60,10 +60,16 @@ export async function loginWithPhone(
   return { ok: true, userId, sessionId: session.id, expiresAt: session.expiresAt }
 }
 
-/** 同一号码同时出现在两个 KV 时返回两个角色。 */
+/** 同一号码同时出现在两个 Key 的清单里时返回两个角色。 */
 async function resolveRolesFromKv(env: ServiceEnv, phone: string): Promise<USER_ROLES[]> {
   const roles: USER_ROLES[] = []
-  if (await env.ADMIN_PHONES.get(phone)) roles.push(USER_ROLES.ADMIN)
-  if (await env.CHEF_PHONES.get(phone)) roles.push(USER_ROLES.CHEF)
+  if (await isListed(env, KV_KEYS.ADMIN_PHONES, phone)) roles.push(USER_ROLES.ADMIN)
+  if (await isListed(env, KV_KEYS.CHEF_PHONES, phone)) roles.push(USER_ROLES.CHEF)
   return roles
+}
+
+/** 号码清单按逗号分隔存于 KV 的单个 Key。 */
+async function isListed(env: ServiceEnv, key: string, phone: string): Promise<boolean> {
+  const list = ((await env.KV.get(key)) ?? '').split(',')
+  return list.some((item) => item.trim() === phone)
 }

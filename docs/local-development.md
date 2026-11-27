@@ -38,21 +38,19 @@ Vite root 是 `webpage/`，因此 `apps/web/vite.config.ts` 用 `persistState` �
 
 ## 本地 KV 预置号码
 
-key 为手机号，值为任意非空字符串（约定用 `1`）。号码只在该手机号首次登录时生效，用于自动注册。
+只用一个 namespace：`bibi-kitchen-kv`，在 `wrangler.jsonc` 中绑定为 `KV`，代码通过 `env.KV` 访问。手机号清单按逗号分隔，分别写在 Key `ADMIN_PHONES`、`CHEF_PHONES` 中；号码只在该手机号首次登录时生效，用于自动注册。
 
 ```sh
 cd apps/web
-npx wrangler kv key put 13800000001 1 --binding ADMIN_PHONES --local   # 管理员 → user_roles.role = admin
-npx wrangler kv key put 13800000002 1 --binding CHEF_PHONES --local    # 厨师   → user_roles.role = chef
-npx wrangler kv key put 13800000003 1 --binding ADMIN_PHONES --local   # 双角色：两个 namespace 都用同一号码
-npx wrangler kv key put 13800000003 1 --binding CHEF_PHONES --local
+npx wrangler kv key put ADMIN_PHONES '13800000001,13800000003' --binding KV --local   # 管理员 → user_roles.role = admin
+npx wrangler kv key put CHEF_PHONES '13800000002,13800000003' --binding KV --local    # 厨师   → user_roles.role = chef
 ```
 
 查看与删除：
 
 ```sh
-npx wrangler kv key list --binding ADMIN_PHONES --local
-npx wrangler kv key delete 13800000001 --binding ADMIN_PHONES --local
+npx wrangler kv key list --binding KV --local
+npx wrangler kv key delete CHEF_PHONES --binding KV --local
 ```
 
 ## 测试
@@ -68,6 +66,7 @@ npm run test:watch --workspace @bibikitchen/webpage
 - 插件**不提供跨用例存储隔离**，所以每个用例前会显式清空 `sessions`、`user_roles`、`users`。新增依赖这些表的用例时沿用该约定。
 - KV 预置号码在 `web/src/routes/auth.test.ts` 的 `beforeEach` 中写入，不依赖本地 `.wrangler` 状态。
 - 页面测试用 jsdom + Testing Library，`fetch` 用 `vi.stubGlobal` 模拟，`window.location.assign` 用桩函数；不需要启后端。
+- KV/D1 ID 构建注入的检查不在 Vitest 内：改过 `web/vite.config.ts` 的注入逻辑后跑 `node web/test/kv-build-id.mjs`（内部调 `npm run build`，留在 `web/test/`）。
 
 文件位置约定：
 
@@ -139,7 +138,7 @@ curl -i -X POST http://localhost:8787/api/login \
 
 ```sh
 cd apps
-npm run build   # 输出到 webpage/dist/client 与 webpage/dist/bibikitchen_web
+npm run build   # 输出到 webpage/dist/client 与 webpage/dist/bibi_kitchen
 cd web
 npx wrangler deploy --dry-run   # 检查将上传的内容与绑定
 ```

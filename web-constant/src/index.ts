@@ -35,6 +35,12 @@ export const PHONE = {
   pattern: /^1[3-9]\d{9}$/,
 } as const
 
+/** KV 中存放预置手机号清单的 Key：服务端读取与测试预置共用。 */
+export const KV_KEYS = {
+  ADMIN_PHONES: 'ADMIN_PHONES',
+  CHEF_PHONES: 'CHEF_PHONES',
+} as const
+
 /** 会话 Cookie 是对外契约，值不随实现变化。 */
 export const SESSION = {
   cookieName: 'session',

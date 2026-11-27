@@ -1,4 +1,4 @@
-import { SESSION } from '@bibikitchen/web-constant'
+import { KV_KEYS, SESSION } from '@bibikitchen/web-constant'
 import { SELF } from 'cloudflare:test'
 import { env } from 'cloudflare:workers'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -48,10 +48,8 @@ beforeEach(async () => {
     env.DB.prepare('delete from users'),
   ])
 
-  await env.ADMIN_PHONES.put(ADMIN, '1')
-  await env.ADMIN_PHONES.put(BOTH, '1')
-  await env.CHEF_PHONES.put(CHEF, '1')
-  await env.CHEF_PHONES.put(BOTH, '1')
+  await env.KV.put(KV_KEYS.ADMIN_PHONES, `${ADMIN},${BOTH}`)
+  await env.KV.put(KV_KEYS.CHEF_PHONES, `${CHEF},${BOTH}`)
 })
 
 describe('POST /api/login', () => {
@@ -70,7 +68,7 @@ describe('POST /api/login', () => {
     expect(await userCount()).toBe(1)
   })
 
-  it('同时出现在两个 KV 的号码获得两个角色', async () => {
+  it('同时出现在两个 Key 的号码获得两个角色', async () => {
     const res = await login(BOTH)
     expect(res.status).toBe(200)
 
@@ -82,6 +80,23 @@ describe('POST /api/login', () => {
     const res = await login(CHEF)
     const body = (await res.json()) as { user: { roles: string[] } }
     expect(body.user.roles).toEqual(['chef'])
+  })
+
+  it('逗号清单允许空白和空项，并按完整手机号匹配', async () => {
+    await env.KV.put(KV_KEYS.ADMIN_PHONES, ` , ${ADMIN} , , ${BOTH},`)
+    await env.KV.put(KV_KEYS.CHEF_PHONES, `${UNKNOWN}0`)
+
+    expect((await login(ADMIN)).status).toBe(200)
+    expect((await login(UNKNOWN)).status).toBe(401)
+  })
+
+  it('Key 缺失或清单为空时不授予角色', async () => {
+    await env.KV.delete(KV_KEYS.ADMIN_PHONES)
+    await env.KV.put(KV_KEYS.CHEF_PHONES, '')
+
+    expect((await login(ADMIN)).status).toBe(401)
+    expect((await login(CHEF)).status).toBe(401)
+    expect(await userCount()).toBe(0)
   })
 
   it('已存在用户重复登录不再新建用户', async () => {

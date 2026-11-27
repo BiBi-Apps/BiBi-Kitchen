@@ -45,9 +45,17 @@ Formatting is [oxfmt](https://oxc.rs) with `semi: false`, `singleQuote: true`, `
 
 ## Database and KV
 
-Bindings live in `web/wrangler.jsonc`: D1 as `DB`, KV as `ADMIN_PHONES` (administrator phone numbers) and `CHEF_PHONES` (chef phone numbers), plus the `ENVIRONMENT` variable. Migrations live in `web-service/drizzle`.
+Bindings live in `web/wrangler.jsonc`: D1 as `DB`, the single KV namespace `bibi-kitchen-kv` as `KV` (`env.KV`), plus the `ENVIRONMENT` variable. `ADMIN_PHONES` and `CHEF_PHONES` are keys in that namespace; each value is a comma-separated list of phone numbers. Migrations live in `web-service/drizzle`.
 
-The repository only contains placeholder IDs. Create the real resources with `wrangler d1 create` and `wrangler kv namespace create`, then replace them in the config.
+The repository contains placeholder IDs. Override either one at build time from `apps/`:
+
+```sh
+KV_NAMESPACE_ID=your_kv_id D1_DATABASE_ID=your_d1_id npm run deploy
+```
+
+`KV_NAMESPACE_ID` takes the 32-digit hexadecimal namespace ID, `D1_DATABASE_ID` the D1 database UUID. Either may be unset or blank, in which case the build keeps the value from `web/wrangler.jsonc` (`00000000000000000000000000000001` and `00000000-0000-0000-0000-000000000000`). A malformed value fails the build. The override applies to Vite builds, not to standalone Wrangler commands.
+
+Reuse the existing KV namespace ID, or create it with `wrangler kv namespace create bibi-kitchen-kv`; create the D1 database with `wrangler d1 create`.
 
 ```sh
 npm run db:generate   # generate SQL migrations from web-service schema

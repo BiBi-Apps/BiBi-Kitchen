@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "deploy": "wrangler deploy --config ../webpage/dist/bibikitchen_web/wrangler.json",
+    "deploy": "wrangler deploy --config ../webpage/dist/bibi_kitchen/wrangler.json",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "test": "vitest run",
     "test:watch": "vitest",

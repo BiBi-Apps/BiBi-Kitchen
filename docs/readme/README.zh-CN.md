@@ -45,9 +45,17 @@ npm run build        # 将客户端资源与 Worker 构建到 webpage/dist
 
 ## 数据库与 KV
 
-绑定在 `web/wrangler.jsonc`：D1 为 `DB`，KV 为 `ADMIN_PHONES`（管理员手机号）与 `CHEF_PHONES`（厨师手机号），另有 `ENVIRONMENT` 变量。迁移放在 `web-service/drizzle`。
+绑定在 `web/wrangler.jsonc`：D1 为 `DB`，唯一的 KV namespace `bibi-kitchen-kv` 绑定为 `KV`（通过 `env.KV` 访问），另有 `ENVIRONMENT` 变量。`ADMIN_PHONES` 与 `CHEF_PHONES` 是其中两个 Key，值为逗号分隔的手机号清单。迁移放在 `web-service/drizzle`。
 
-仓库内只保留占位 ID。用 `wrangler d1 create` 与 `wrangler kv namespace create` 创建真实资源后替换配置。
+仓库内只保留占位 ID。在 `apps/` 构建前可用环境变量覆盖两项：
+
+```sh
+KV_NAMESPACE_ID=your_kv_id D1_DATABASE_ID=your_d1_id npm run deploy
+```
+
+`KV_NAMESPACE_ID` 为 32 位十六进制 namespace ID，`D1_DATABASE_ID` 为 D1 数据库 UUID。两者均可未设置或留空，此时构建沿用 `web/wrangler.jsonc` 中的值（`00000000000000000000000000000001`、`00000000-0000-0000-0000-000000000000`）；格式不对则构建直接报错。此覆盖仅对 Vite 构建生效，单独执行 Wrangler 命令时不生效。
+
+若 KV namespace 已存在，直接用其 ID；否则用 `wrangler kv namespace create bibi-kitchen-kv` 创建。D1 数据库用 `wrangler d1 create` 创建。
 
 ```sh
 npm run db:generate   # 从 web-service 的 schema 生成 SQL 迁移

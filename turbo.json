@@ -3,11 +3,13 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": ["KV_NAMESPACE_ID", "D1_DATABASE_ID"]
     },
     "build": {
       "cache": true,
       "outputs": ["$TURBO_ROOT$/webpage/dist/**"],
+      "env": ["KV_NAMESPACE_ID", "D1_DATABASE_ID"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/web-constant/src/**",

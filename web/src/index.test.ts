@@ -1,4 +1,4 @@
-import { SESSION } from '@bibikitchen/web-constant'
+import { KV_KEYS, SESSION } from '@bibikitchen/web-constant'
 import { SELF } from 'cloudflare:test'
 import { env } from 'cloudflare:workers'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -43,7 +43,7 @@ beforeEach(async () => {
     env.DB.prepare('delete from user_roles'),
     env.DB.prepare('delete from users'),
   ])
-  await env.ADMIN_PHONES.put(ADMIN, '1')
+  await env.KV.put(KV_KEYS.ADMIN_PHONES, ADMIN)
 })
 
 describe('服务端渲染', () => {
