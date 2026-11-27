@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "skills": {
+    "cf-cli": {
+      "source": "cloudflare/skills",
+      "commit": "ff191de7d903788eceaf516a514ae7d3b56b924a",
+      "sourceType": "github",
+      "skillPath": "skills/cf-cli/SKILL.md",
+      "computedHash": "2e05ef054a100c652513e6028ed478b16f7db01a4b397544bd20ced39a4591e9"
+    },
+    "cloudflare": {
+      "source": "cloudflare/skills",
+      "commit": "ff191de7d903788eceaf516a514ae7d3b56b924a",
+      "sourceType": "github",
+      "skillPath": "skills/cloudflare/SKILL.md",
+      "computedHash": "c87fdf5939f1c0b86dc895af18dbff1be369707fc3f1cd9cc038c3c3be5c694f"
+    },
+    "workers-development": {
+      "source": "cloudflare/skills",
+      "commit": "ff191de7d903788eceaf516a514ae7d3b56b924a",
+      "sourceType": "github",
+      "skillPath": "skills/workers-development/SKILL.md",
+      "computedHash": "a5b7dd748116d8b83db7d198867badcdde53c9eb13bf884c7557d40d0c965e38"
+    },
+    "wrangler": {
+      "source": "cloudflare/skills",
+      "commit": "ff191de7d903788eceaf516a514ae7d3b56b924a",
+      "sourceType": "github",
+      "skillPath": "skills/wrangler/SKILL.md",
+      "computedHash": "182e370d8c26e6bcb896a57a63e6cab006b253b9278cc3515f7b9db2c4d07661"
+    }
+  }
+}
