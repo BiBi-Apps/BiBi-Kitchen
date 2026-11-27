@@ -1,5 +1,5 @@
 {
-  "ignorePatterns": ["**/worker-configuration.d.ts", "**/drizzle/meta/**"],
+  "ignorePatterns": ["**/worker-configuration.d.ts", "**/drizzle/meta/**", "**/dist/**"],
   "semi": false,
   "singleQuote": true,
   "printWidth": 100

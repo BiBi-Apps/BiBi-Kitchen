@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "deploy": "wrangler deploy --config ../webpage/dist/bibi_kitchen/wrangler.json",
+    "deploy": "wrangler deploy --config dist/bibi_kitchen/wrangler.json",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,13 +31,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.70.2",
     "@cloudflare/vitest-plugin": "^1.9.2",
-    "@tailwindcss/vite": "^4.3.5",
-    "@types/react": "^19.3.3",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.3.0",
-    "tailwindcss": "^4.3.5",
     "vite": "^8.3.8",
-    "vite-ssr-components": "^0.9.0",
     "vitest": "^4.1.12",
     "wrangler": "^4.110.0"
   }

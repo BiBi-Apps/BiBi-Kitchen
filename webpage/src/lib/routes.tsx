@@ -1,15 +1,16 @@
 import type { ReactElement } from 'react'
 import { PAGE_PATHS } from '@bibikitchen/web-constant'
-import type { PageState } from '@/lib/page-state'
-import { HomePage } from '@/pages/home'
-import { LoginPage } from '@/pages/login'
+import { HomePage } from '@/pages/HomePage'
+import { LoginPage } from '@/pages/LoginPage'
+import { LogoutPage } from '@/pages/LogoutPage'
 
-/**
- * 路径 → 页面的唯一映射：服务端渲染与客户端水合都走这里。
- * 新增页面只改这一处，避免两侧各写一遍导致路由漂移。
- */
-export function createPage(pathname: string, state: PageState): ReactElement | null {
-  if (pathname === PAGE_PATHS.HOME) return <HomePage user={state.user} />
-  if (pathname === PAGE_PATHS.LOGIN) return <LoginPage />
-  return null
+/** 路径 → 页面的唯一映射：首屏 SSR 与客户端路由都从这里取，新增页面只改这一处。 */
+export const PAGE_ROUTES: readonly { path: string; element: ReactElement }[] = [
+  { path: PAGE_PATHS.HOME, element: <HomePage /> },
+  { path: PAGE_PATHS.LOGIN, element: <LoginPage /> },
+  { path: PAGE_PATHS.LOGOUT, element: <LogoutPage /> },
+]
+
+export function isPagePath(pathname: string): boolean {
+  return PAGE_ROUTES.some((route) => route.path === pathname)
 }

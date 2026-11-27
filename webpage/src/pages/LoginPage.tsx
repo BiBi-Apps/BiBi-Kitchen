@@ -1,11 +1,18 @@
-import { APP_NAME, MESSAGES, PAGE_PATHS, PHONE } from '@bibikitchen/web-constant'
+import { API_PATHS, MESSAGES, PAGE_PATHS, PHONE } from '@bibikitchen/web-constant'
+import type { CurrentUser } from '@bibikitchen/web-service'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { login } from '@/requests/auth'
+import { APP_NAME } from '@bibikitchen/web-constant'
+import { useUser } from '@/contexts/user'
+import { readApiResponse } from '@/lib/api'
 
+/** 登录页：表单提交走后端接口，成功后由客户端路由跳到首页。 */
 export function LoginPage() {
+  const { setUser } = useUser()
+  const navigate = useNavigate()
   const [phone, setPhone] = useState('')
   const [error, setError] = useState<string>()
   const [pending, setPending] = useState(false)
@@ -14,16 +21,24 @@ export function LoginPage() {
     event.preventDefault()
     setPending(true)
     setError(undefined)
+
     try {
-      const result = await login(phone.trim())
-      if (!result.ok) {
-        setError(result.error)
+      // pi-lens-ignore: ts-ssrf -- 同源相对路径常量，无外部目标
+      const res = await fetch(API_PATHS.LOGIN, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone.trim() }),
+      })
+      const result = await readApiResponse<{ user: CurrentUser | null }>(res)
+      if (!result.ok || !result.data?.user) {
+        setError(result.message)
         return
       }
-      // 首页数据由服务端渲染，整页跳转以获取最新会话
-      window.location.assign(PAGE_PATHS.HOME)
+      setUser(result.data.user)
+      navigate(PAGE_PATHS.HOME)
     } catch {
-      // fetch 本身失败（离线、断网）不会走到 login 的返回值分支
+      // fetch 本身失败（离线、断网）不会走到上面的返回值分支
       setError(MESSAGES.LOGIN_FAILED_UNKNOWN)
     } finally {
       setPending(false)
@@ -55,7 +70,7 @@ export function LoginPage() {
                 required
                 aria-invalid={error ? true : undefined}
               />
-              {error ? <p className="text-sm text-destructive">{error}</p> : null}
+              <p className="text-sm text-destructive">{error ?? ''}</p>
             </div>
             <Button type="submit" className="w-full" disabled={pending}>
               {pending ? '登录中…' : '登录'}

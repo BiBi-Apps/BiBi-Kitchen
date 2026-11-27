@@ -4,37 +4,24 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["KV_NAMESPACE_ID", "D1_DATABASE_ID"]
+      "passThroughEnv": ["KV_NAMESPACE_ID", "D1_DATABASE_ID", "ENVIRONMENT"]
     },
     "build": {
       "cache": true,
-      "outputs": ["$TURBO_ROOT$/webpage/dist/**"],
-      "env": ["KV_NAMESPACE_ID", "D1_DATABASE_ID"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/web-constant/src/**",
-        "$TURBO_ROOT$/web-service/src/**",
-        "$TURBO_ROOT$/web-service/drizzle/**",
-        "$TURBO_ROOT$/webpage/src/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "env": ["KV_NAMESPACE_ID", "D1_DATABASE_ID", "ENVIRONMENT"],
+      "inputs": ["$TURBO_DEFAULT$"]
     },
     "test": {
       "cache": true,
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/web-constant/src/**",
-        "$TURBO_ROOT$/web-service/**",
-        "$TURBO_ROOT$/webpage/src/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"]
     },
     "lint": {
       "cache": true,
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/web-constant/src/**",
-        "$TURBO_ROOT$/web-service/src/**",
-        "$TURBO_ROOT$/webpage/src/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"]
     },
     "fix": {
       "cache": false

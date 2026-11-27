@@ -12,11 +12,19 @@ npm install
 
 `npm run dev` 只启动一个服务：
 
-| 服务                       | 地址                    | 说明                                                                    |
-| -------------------------- | ----------------------- | ----------------------------------------------------------------------- |
-| `web`（Vite dev + Worker） | `http://localhost:8787` | 页面 SSR、`/api/*` 与 HMR 同源；本地 D1/KV 状态在 `web/.wrangler/state` |
+| 服务                       | 地址                    | 说明                                                         |
+| -------------------------- | ----------------------- | ------------------------------------------------------------ |
+| `web`（Vite dev + Worker） | `http://localhost:8787` | 页面 SSR 与表单提交；本地 D1/KV 状态在 `web/.wrangler/state` |
 
-四个 workspace 职责：`web-constant` 共享常量与契约、`web-service` 共用逻辑、`webpage` 页面与 SSR、`web` 接入与构建。
+四个 workspace 各自构建、下游只消费产物：`web-constant` 共享常量与契约（`tsc` 出 `dist`）、`web-service` 共用逻辑（`tsc` 出 `dist`）、`webpage` 页面与 SSR（`vite build` 出 `dist/client`、`dist/server` 与 `dist/types`）、`web` 接入与 Worker 构建。
+
+`web` 不再构建页面：`npm run dev` 读取的是 `webpage/dist` 里已有的产物，所以 **改过页面代码要先构建 webpage**：
+
+```sh
+npm run build --workspace @bibikitchen/webpage
+```
+
+服务端只输出 HTML 外壳（head + 首屏数据 + 空挂载点），页面与路由都在浏览器；`web` 的 dev 以静态文件方式提供 `webpage/dist/client` 里的客户端 bundle、CSS 与 favicon。改页面代码仍要重跑上面的构建命令再刷新。
 
 ## 本地 D1
 
@@ -64,9 +72,10 @@ npm run test:watch --workspace @bibikitchen/webpage
 
 - 集成测试在 workerd 中运行，D1 用真实本地库，迁移由 `web/test/setup.ts` 从 `web-service/drizzle` 自动应用。
 - 插件**不提供跨用例存储隔离**，所以每个用例前会显式清空 `sessions`、`user_roles`、`users`。新增依赖这些表的用例时沿用该约定。
-- KV 预置号码在 `web/src/routes/auth.test.ts` 的 `beforeEach` 中写入，不依赖本地 `.wrangler` 状态。
-- 页面测试用 jsdom + Testing Library，`fetch` 用 `vi.stubGlobal` 模拟，`window.location.assign` 用桩函数；不需要启后端。
-- KV/D1 ID 构建注入的检查不在 Vitest 内：改过 `web/vite.config.ts` 的注入逻辑后跑 `node web/test/kv-build-id.mjs`（内部调 `npm run build`，留在 `web/test/`）。
+- KV 预置号码在 `web/src/index.test.ts` 的 `beforeEach` 中写入，不依赖本地 `.wrangler` 状态。
+- 接口按 JSON 被测（`POST /api/login`、`POST /api/logout`、`GET /api/me`），断言状态码、`{ user }` / `{ error }` 与 `Set-Cookie`；外壳按 HTML 字符串断言（`<head>`、空的 `#root`、首屏数据脚本、客户端入口），页面行为用 jsdom + Testing Library 在浏览器环境测。
+- 页面测试直接调用 `renderPage` 断言 HTML 字符串（不再需要 jsdom 与 Testing Library），也不需要启后端。
+- KV/D1/ENVIRONMENT 构建注入的检查不在 Vitest 内：改过 `web/vite.config.ts` 的注入逻辑后跑 `node web/test/build-config-env.mjs`（内部调 `npm run build`，留在 `web/test/`）。
 
 文件位置约定：
 
@@ -98,15 +107,15 @@ npm run test:watch --workspace @bibikitchen/webpage
 
 共享值集中在 `web-constant/src/index.ts`，被引用两处以上才移入，避免过度抽象：
 
-| 常量                                      | 用途                               |
-| ----------------------------------------- | ---------------------------------- |
-| `APP_NAME`                                | 页面标题与卡片标题                 |
-| `PAGE_PATHS` / `API_PATHS`                | 页面路由、站内链接与 `/api/*` 请求 |
-| `USER_ROLES` / `UserRole` / `ROLE_LABELS` | 数据库枚举、会话返回体与界面文案   |
-| `PHONE`                                   | 服务端格式校验与输入框 `maxlength` |
-| `SESSION`                                 | Cookie 名与 30 天有效期            |
-| `MESSAGES`                                | 服务端与浏览器共用提示文案         |
-| `STATE_ELEMENT_ID`                        | SSR 初始状态的元素 id              |
+| 常量                                      | 用途                                                      |
+| ----------------------------------------- | --------------------------------------------------------- |
+| `APP_NAME`                                | 页面标题与卡片标题                                        |
+| `PAGE_PATHS` / `API_PATHS`                | 页面路由（含 `/logout` 结果页）、站内链接与表单提交的接口 |
+| `USER_ROLES` / `UserRole` / `ROLE_LABELS` | 数据库枚举、会话返回体与界面文案                          |
+| `PHONE`                                   | 服务端格式校验与输入框 `maxlength`                        |
+| `SESSION`                                 | Cookie 名与 30 天有效期                                   |
+| `MESSAGES`                                | 页面提示文案与跨站拒绝说明                                |
+| `KV_KEYS`                                 | 预置手机号清单在 KV 中的 Key                              |
 
 ## 添加 shadcn 组件
 
@@ -117,11 +126,11 @@ cd apps/webpage
 npx shadcn@latest add dialog
 ```
 
-组件可直接使用 Radix 交互能力：页面已是「服务端渲染 + 客户端水合」，无需另搭水合桥。
+交互一律靠原生表单与服务端渲染，不引入客户端状态；需要 JS 的 Radix 交互组件（如 Dialog 受控开关）当前不适用，选中前先确认能退回纯 CSS 或原生元素实现。
 
 ## 跨站校验
 
-API 的写接口会校验 `Origin` 是否与请求主机一致，防跨站伪造；比对顺序为 `X-Forwarded-Host` → `Host` → 请求 URL 主机，因此套代理也不会误判。
+写接口（`/api/login`、`/api/logout`）会校验 `Origin` 是否与请求主机一致，防跨站伪造；只信 `Host`，不参考可伪造的 `X-Forwarded-Host`。
 
 不带 `Origin` 的请求（如 `curl`）会通过校验，所以测跨站限制时 **必须手动带 `Origin`**：
 
@@ -130,6 +139,10 @@ curl -i -X POST http://localhost:8787/api/login \
   -H 'Content-Type: application/json' \
   -H 'Origin: https://evil.example' \
   -d '{"phone":"13800000001"}'   # 预期 403
+
+curl -i -X POST http://localhost:8787/api/login \
+  -H 'Content-Type: application/json' \
+  -d '{"phone":"13800000001"}'   # 预期 200 + Set-Cookie + {"code":200,"message":…,"data":{"user":…}}
 ```
 
 ## 验证生产形态
@@ -138,7 +151,7 @@ curl -i -X POST http://localhost:8787/api/login \
 
 ```sh
 cd apps
-npm run build   # 输出到 webpage/dist/client 与 webpage/dist/bibi_kitchen
+npm run build   # 逐包构建：web-constant/dist、web-service/dist、webpage/dist、web/dist/bibi_kitchen
 cd web
 npx wrangler deploy --dry-run   # 检查将上传的内容与绑定
 ```

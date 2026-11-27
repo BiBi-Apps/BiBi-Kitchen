@@ -12,12 +12,11 @@ app.use(
     xFrameOptions: 'DENY',
     contentSecurityPolicy: {
       defaultSrc: ["'self'"],
-      // 开发态 Vite 会注入 react-refresh 内联脚本、内联样式，HMR 走同源 WebSocket；
-      // 生产构建无内联脚本，后续收紧为 script-src 'self' 时需先确认无内联注入。
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      // 首屏由服务端渲染，之后由客户端 bundle 接管路由；样式来自构建产物与内联样式属性
+      scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:'],
-      connectSrc: ["'self'", 'ws:', 'wss:'],
+      connectSrc: ["'self'"],
       objectSrc: ["'none'"],
       baseUri: ["'none'"],
       formAction: ["'self'"],

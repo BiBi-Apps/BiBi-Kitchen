@@ -1,17 +1,11 @@
 import { renderToString } from 'react-dom/server'
-import { Root } from '@/components/root'
-import { FlagsProvider } from '@/contexts/flags'
+import { Shell } from '@/components/Shell'
 import type { PageState } from '@/lib/page-state'
-import { createPage } from '@/lib/routes'
 
-/** 按路径渲染整页 HTML；无匹配页面时返回 null，由调用方决定 404。 */
-export function renderPage(pathname: string, state: PageState): string | null {
-  const page = createPage(pathname, state)
-  if (!page) return null
-
-  return `<!doctype html>${renderToString(
-    <Root state={state}>
-      <FlagsProvider flags={state.flags}>{page}</FlagsProvider>
-    </Root>,
-  )}`
+/**
+ * 服务端只输出 HTML 外壳与首屏数据，页面结构交给客户端渲染。
+ * 这样服务端不需要跑页面组件，也不必为两套渲染保持一致而操心。
+ */
+export function renderShell(state: PageState): string {
+  return `<!doctype html>${renderToString(<Shell state={state} />)}`
 }

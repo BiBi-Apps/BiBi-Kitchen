@@ -3,22 +3,30 @@ import { Hono } from 'hono'
 import { getCurrentUser } from '@bibikitchen/web-service'
 import type { ServiceEnv } from '@bibikitchen/web-service'
 import type { AppFlags } from './contexts/flags'
+import { renderShell } from './entry-server'
 import type { PageState } from './lib/page-state'
-import { renderPage } from './entry-server'
+import { isPagePath } from './lib/routes'
 
-/** 页面子应用：只负责 HTML 渲染，数据通过 web-service 获取。 */
-export const webpage = new Hono<{ Bindings: ServiceEnv }>()
+type Bindings = ServiceEnv
 
-async function render(c: Parameters<typeof getCurrentUser>[0], pathname: string) {
-  const user = await getCurrentUser(c)
-  const environment = (c.env as ServiceEnv & { ENVIRONMENT?: string }).ENVIRONMENT
-  // 环境开关在服务端算好随首屏下发，浏览器不重新判断
-  const flags: AppFlags = { showLogout: environment !== 'production' }
-  const state: PageState = { user, flags }
-  const html = renderPage(pathname, state)
-  c.header('Cache-Control', 'no-store')
-  return html ? c.html(html) : c.notFound()
+/** 页面子应用：只输出 HTML 外壳与首屏数据，页面渲染与路由都在客户端。 */
+export const webpage = new Hono<{ Bindings: Bindings }>()
+
+/** 依赖环境的渲染开关：目前没有开关项，需要时在这里按 c.env 计算。 */
+function flagsOf(): AppFlags {
+  return {}
 }
 
-webpage.get(PAGE_PATHS.HOME, (c) => render(c, PAGE_PATHS.HOME))
-webpage.get(PAGE_PATHS.LOGIN, (c) => render(c, PAGE_PATHS.LOGIN))
+async function shell(c: Parameters<typeof getCurrentUser>[0], pathname: string) {
+  if (!isPagePath(pathname)) return c.notFound()
+
+  const state: PageState = { user: await getCurrentUser(c), flags: flagsOf() }
+  c.header('Cache-Control', 'no-store')
+  return c.html(renderShell(state))
+}
+
+webpage.get(PAGE_PATHS.HOME, (c) => shell(c, PAGE_PATHS.HOME))
+webpage.get(PAGE_PATHS.LOGIN, (c) => shell(c, PAGE_PATHS.LOGIN))
+webpage.get(PAGE_PATHS.LOGOUT, (c) => shell(c, PAGE_PATHS.LOGOUT))
+
+export default webpage

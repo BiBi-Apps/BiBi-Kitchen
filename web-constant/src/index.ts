@@ -6,14 +6,15 @@ export const APP_NAME = '羊哆吉厨房'
 export const PAGE_PATHS = {
   HOME: '/',
   LOGIN: '/login',
+  LOGOUT: '/logout',
 } as const
 export type PAGE_PATHS = (typeof PAGE_PATHS)[keyof typeof PAGE_PATHS]
 
-/** API 路径：服务端注册、浏览器请求与测试共用。 */
+/** 接口路径：页面跳转之外的数据请求都走这里，客户端与测试共用。 */
 export const API_PATHS = {
   LOGIN: '/api/login',
-  ME: '/api/me',
   LOGOUT: '/api/logout',
+  ME: '/api/me',
 } as const
 export type API_PATHS = (typeof API_PATHS)[keyof typeof API_PATHS]
 
@@ -47,13 +48,34 @@ export const SESSION = {
   ttlMs: 30 * 24 * 60 * 60 * 1000,
 } as const
 
-/** 服务端与浏览器共用的提示文案。 */
+/** 页面文案：服务端渲染与接口返回共用。 */
 export const MESSAGES = {
+  SUCCESS: '操作成功',
   PHONE_FORMAT_INVALID: '请输入 11 位手机号码',
   PHONE_NOT_REGISTERED: '该手机号码未登记，无法登录',
   CROSS_SITE_REJECTED: '跨站请求被拒绝',
   LOGIN_FAILED_UNKNOWN: '登录失败，请稍后重试',
 } as const
 
-/** 服务端渲染时承载初始状态的元素 id，水合时按此读取。 */
+/**
+ * 接口统一返回体：`code` 与 HTTP 状态码一致，`message` 供页面直接展示，
+ * `data` 为业务数据，无数据时用 `null`。
+ */
+export type ApiResponse<T> = {
+  code: number
+  message: string
+  data: T
+}
+
+/** 接口返回码：取值与 HTTP 状态码一致，避免两套编号。 */
+export const API_CODES = {
+  OK: 200,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  INTERNAL_ERROR: 500,
+} as const
+export type API_CODES = (typeof API_CODES)[keyof typeof API_CODES]
+
+/** 服务端渲染时承载首屏数据的元素 id，水合时按此读取。 */
 export const STATE_ELEMENT_ID = '__BIBI_STATE__'

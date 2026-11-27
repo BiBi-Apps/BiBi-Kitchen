@@ -3,6 +3,9 @@
   "name": "bibi-kitchen",
   "compatibility_date": "2025-08-03",
   "main": "./src/index.ts",
+  "assets": {
+    "directory": "../webpage/dist/client",
+  },
   "vars": {
     "ENVIRONMENT": "development",
   },
